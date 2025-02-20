@@ -1,0 +1,18 @@
+num_stacks=5
+stack_0_x=-10.5
+stack_0_y=15.2
+stack_0_n=3
+stack_1_x=5.0
+stack_1_y=-12.3
+stack_1_n=2
+stack_2_x=0.0
+stack_2_y=3.0
+stack_2_n=4
+stack_3_x=-5.0
+stack_3_y=7.0
+stack_3_n=5
+stack_4_x=10.0
+stack_4_y=12.0
+stack_4_n=1
+
+blend_file_path=F:\AGorkemDepo\Documents\Blender Files\3DVisualization\CubeScene.blend
