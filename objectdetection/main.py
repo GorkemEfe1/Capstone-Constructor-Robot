@@ -3,9 +3,11 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 from pytesseract import image_to_string
 import numpy as np
+import json
+
 
 # Opening image
-img = cv2.imread("image.jpg")
+img = cv2.imread("img_1.png")
 
 # OpenCV opens images as BRG
 # but we want it as RGB and
@@ -34,9 +36,9 @@ filtered_contours = []
 for contour in contours:
     area = cv2.contourArea(contour)
     if min_area < area < max_area:
-        filtered_contours.append(contour)
-
-cv2.drawContours(img, filtered_contours, -1, (0,255,0), 3)
+        epsilon = 0.04 * cv2.arcLength(contour, True) #Adjust epsilon as needed. Lower=more detail
+        approx = cv2.approxPolyDP(contour, epsilon, True)
+        filtered_contours.append(approx)
 
 #Create a dictionary which will later be converted to json and sent to other subsystems
 buildings = {"Buildings": []}
@@ -56,12 +58,15 @@ for contour in filtered_contours:
     x, y, w, h = cv2.boundingRect(contour)
 
     #The midway point between the corners indicate the coordinates of the center
-    building["Xcenter"] = x + w/2
-    building["Ycenter"] = y + h/2
+    for count, vertex in enumerate(contour):
+        building[f"XofV{count}"] = int(vertex[0][0])
+        building[f"YofV{count}"] = int(vertex[0][1])
 
     # Extract the region of interest (ROI) from the original image
     #The roi is cropped to remove the bounding lines from the image, might implement a more robust algorithm for this later
-    roi = img[y+10:y + h-10, x+10:x + w-10]
+    #roi = img[y+10:y + h-10, x+10:x + w-10]
+    roi = img[y:y + h, x:x + w]
+    cv2.imshow("ex", roi)
     roi_grayscale = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
 
     #threshold for easier number detection
@@ -90,6 +95,8 @@ for contour in filtered_contours:
     else:
         print("Couldn't find number.")
 
+    print("Total edges: " + str(len(contour)))
+
     building["Height"] = text_number
     #Append the building data to the list
     buildings["Buildings"].append(building)
@@ -100,7 +107,10 @@ for contour in filtered_contours:
 
 # Creates the environment
 # of the picture and shows it
-print(buildings)
+cv2.drawContours(img, filtered_contours, -1, (0,255,0), 3)
 plt.subplot(1, 1, 1)
 plt.imshow(img, cmap=cm.bone)
 plt.show()
+
+with open('result.json', 'w') as fp:
+    json.dump(buildings, fp)
