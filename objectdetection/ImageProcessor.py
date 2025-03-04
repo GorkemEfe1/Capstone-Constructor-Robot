@@ -82,7 +82,7 @@ class ImageProcessor:
 
             print("Total edges: " + str(len(contour)))
 
-            building["Height"] = self.extract_number(roi_grayscale)
+            building["Height"] = self.extract_number(roi_grayscale, contour, [x,y,w,h])
             # Append the building data to the list
             self.buildings["Buildings"].append(building)
 
@@ -115,44 +115,54 @@ class ImageProcessor:
             roi_grayscale: Region of interest in grayscale"""
         # roi = img[y+10:y + h-10, x+10:x + w-10]
         roi = self.cv2_image[y:y + h, x:x + w]
-        cv2.imshow("ex", roi)
+        #cv2.imshow("ex", roi)
         roi_grayscale = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         return roi, roi_grayscale
 
-    def extract_number(self, roi_grayscale):
+    def extract_number(self, roi_grayscale, contour, bounding_box):
         """Extracts the number from the region of interest and returns it
         Parameters:
             roi_grayscale: Region of interest in grayscale
+            contour: The list of vertices of the corners, used for removing the edges
         Returns:
             text_number: The number that is found"""
-        # threshold for easier number detection
-        _, thresh = cv2.threshold(roi_grayscale, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-        # Perform OCR
-        text = image_to_string(thresh,
-                               config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789')  # psm 7 for a single line of text
-        inv_text = image_to_string(255 - thresh, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789')
-        text_gray = image_to_string(roi_grayscale,
-                                    config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789')  # psm 7 for a single line of text
-        inv_text_gray = image_to_string(255 - roi_grayscale,
-                                        config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789')
+        def preprocess_image(img_temp):
+            """Apply preprocessing techniques to improve OCR accuracy."""
+            # Apply Gaussian Blur to reduce noise
+            blurred = cv2.GaussianBlur(img_temp, (5, 5), 0)
 
-        text_number = -1
+            # Apply adaptive thresholding for better contrast
+            adaptive_thresh = cv2.adaptiveThreshold(
+                blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+            )
 
-        if text.strip():
-            print(f"Detected number: {text.strip()}")
-            text_number = text.strip()
-        elif inv_text.strip():
-            print(f"Detected number: {inv_text.strip()}")
-            text_number = inv_text.strip()
-        elif text_gray.strip():
-            print(f"Detected number: {text_gray.strip()}")
-            text_number = text_gray.strip()
-        elif inv_text_gray.strip():
-            print(f"Detected number: {inv_text_gray.strip()}")
-            text_number = inv_text_gray.strip()
-        else:
+            return adaptive_thresh
+
+        # Preprocess the ROI
+        processed_img = preprocess_image(roi_grayscale)
+        processed_img = self.remove_edges(processed_img, contour,bounding_box)
+
+        # Try different versions (original, thresholded, inverted)
+        versions = [
+            processed_img
+        ]
+        cv2.imshow("processed_img", processed_img)
+        cv2.waitKey(0)
+
+        text_number = None
+
+        for img in versions:
+            text = image_to_string(img, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789').strip()
+
+            if text:
+                print(f"Detected number: {text}")
+                text_number = text
+                break  # Stop once we successfully detect a number
+
+        if text_number is None:
             print("Couldn't find number.")
+
         return text_number
 
     def show_final(self):
@@ -162,6 +172,49 @@ class ImageProcessor:
         plt.subplot(1, 1, 1)
         plt.imshow(self.cv2_image, cmap=cm.bone)
         plt.show()
+
+    def remove_edges(self, roi_grayscale, corners, bounding_box, edge_thickness=10):
+        """
+        Removes edges from an object in an ROI by using the object's corner coordinates.
+
+        Parameters:
+            roi_grayscale: The extracted region of interest (grayscale).
+            corners: List of (X, Y) corner coordinates from the original image.
+            bounding_box: (x, y, w, h) - Bounding box of the ROI in the original image.
+
+        Returns:
+            roi_no_edges: The ROI with edges removed.
+        """
+        # Extract bounding box details
+        x, y, w, h = bounding_box
+
+        # Convert corner coordinates to ROI-relative coordinates
+        relative_corners = np.array(corners) - np.array([x, y])
+
+        # Create a white mask
+        mask = np.ones_like(roi_grayscale, dtype=np.uint8) * 255
+
+        # Ensure the relative_corners are properly reshaped for OpenCV
+        pts = relative_corners.reshape((-1, 1, 2)).astype(np.int32)
+
+        # Fill the shape with white, then draw the edges in black
+        cv2.fillPoly(mask, [pts], 255)  # Fill with white
+        cv2.polylines(mask, [pts], isClosed=True, color=0, thickness=edge_thickness)  # Draw edges in black
+
+
+        # Apply the mask to sremove edges while keeping the inside intact
+        roi_no_edges = cv2.bitwise_and(255-roi_grayscale, mask)
+        filtered_roi = cv2.medianBlur(roi_no_edges,3)
+        filtered_inv = 255-filtered_roi
+        # Create a kernel for dilation (adjust the size and shape as needed)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # Example 3x3 rectangular kernel
+
+        # Dilate the binary image
+        dilated_img = cv2.dilate(filtered_inv, kernel, iterations=1)
+        eroded_img = cv2.erode(dilated_img, kernel, iterations=1)
+
+
+        return eroded_img
 
     def export_json(self):
         with open('result.json', 'w') as fp:
