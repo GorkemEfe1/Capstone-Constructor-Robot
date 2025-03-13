@@ -83,6 +83,8 @@ class ImageProcessor:
             print("Total edges: " + str(len(contour)))
 
             building["Height"] = self.extract_number(roi_grayscale, contour, [x,y,w,h])
+            building["Color"] = self.extract_color(roi, contour,[x,y,w,h])
+            print("The color for this region is: " + building["Color"])
             # Append the building data to the list
             self.buildings["Buildings"].append(building)
 
@@ -165,6 +167,36 @@ class ImageProcessor:
 
         return text_number
 
+    def extract_color(self, roi, contour, bounding_box):
+        """
+        Extracts the dominant color of the building within the ROI.
+
+        Args:
+            roi: The region of interest (ROI) image.
+            contour: The contour of the building.
+            bounding_box: [x, y, w, h] of the bounding box.
+
+        Returns:
+            A string representing the dominant color (e.g., "red", "blue", "gray").
+        """
+
+        if roi is None or roi.size == 0:
+            return "#000000"  # Return black if ROI is empty
+
+        resized_roi = cv2.resize(roi, (100, 100))
+
+        # Calculate the average color
+        average_color_bgr = np.mean(resized_roi, axis=(0, 1))
+
+        # Convert BGR to RGB
+        average_color_rgb = average_color_bgr[::-1]
+
+        # Convert RGB to hex
+        hex_color = '#{:02x}{:02x}{:02x}'.format(int(average_color_rgb[0]), int(average_color_rgb[1]),
+                                                 int(average_color_rgb[2]))
+
+        return hex_color
+
     def show_final(self):
         """Creates the environment
         of the picture and shows it"""
@@ -202,7 +234,7 @@ class ImageProcessor:
         cv2.polylines(mask, [pts], isClosed=True, color=0, thickness=edge_thickness)  # Draw edges in black
 
 
-        # Apply the mask to sremove edges while keeping the inside intact
+        # Apply the mask to remove edges while keeping the inside intact
         roi_no_edges = cv2.bitwise_and(255-roi_grayscale, mask)
         filtered_roi = cv2.medianBlur(roi_no_edges,3)
         filtered_inv = 255-filtered_roi
