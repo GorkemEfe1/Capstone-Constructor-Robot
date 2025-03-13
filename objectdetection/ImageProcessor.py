@@ -144,12 +144,13 @@ class ImageProcessor:
         # Preprocess the ROI
         processed_img = preprocess_image(roi_grayscale)
         processed_img = self.remove_edges(processed_img, contour,bounding_box)
+        filled_img = self.fill_number(processed_img)
 
         # Try different versions (original, thresholded, inverted)
         versions = [
-            processed_img
+            filled_img
         ]
-        cv2.imshow("processed_img", processed_img)
+        cv2.imshow("processed_img", filled_img)
         cv2.waitKey(0)
 
         text_number = None
@@ -245,8 +246,41 @@ class ImageProcessor:
         dilated_img = cv2.dilate(filtered_inv, kernel, iterations=1)
         eroded_img = cv2.erode(dilated_img, kernel, iterations=1)
 
-
         return eroded_img
+
+    def fill_number(self, image):
+
+        # Find contours
+        contours, _ = cv2.findContours(image, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+
+        # First, determine max and min areas for thresholding
+        max_area = image.shape[0] * image.shape[1] * 0.9
+        min_area = 00
+
+        # Second, create a filtered list
+        filtered_contours = []
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if min_area < area < max_area:
+                filtered_contours.append(contour)
+
+        # Find the largest contour (assuming it's the number)
+        largest_contour = max(filtered_contours, key=cv2.contourArea)
+        #print(filtered_contours)
+
+        # Create a mask filled with black
+        mask = np.zeros_like(image)
+
+        # Draw the largest contour onto the mask and fill it with white
+        cv2.drawContours(mask, [largest_contour], 0, 255, thickness=cv2.FILLED)
+
+        # Apply the mask to the original image (or the thresholded image)
+        filled_image = cv2.bitwise_and(image, mask)  # Or use 'image' instead of 'thresh'
+
+        # Invert back to black on white (if needed for Tesseract)
+        filled_image = cv2.bitwise_not(filled_image)
+        return filled_image
 
     def export_json(self):
         with open('result.json', 'w') as fp:
