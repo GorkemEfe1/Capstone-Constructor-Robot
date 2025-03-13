@@ -75,7 +75,14 @@ class ImageProcessor:
 
             # Get the bounding rectangle around the contour
             x, y, w, h = cv2.boundingRect(contour)
-            building = self.extract_vertex_coordinates(contour, building)
+            building["Shape"] = self.extract_shape(contour)
+
+            if building["Shape"] != "Circle":
+                building = self.extract_vertex_coordinates(contour, building)
+            else:
+                building = self.extract_radius(contour, building)
+                building["CenterX"] = x + w/2
+                building["CenterY"] = y + h/2
 
             # Extract the region of interest (ROI) from the original image
             roi, roi_grayscale = self.extract_roi(x, y, w, h)
@@ -91,6 +98,33 @@ class ImageProcessor:
             # # Show the extracted ROI (optional)
             # cv2.imshow('ROI', 255 - thresh)
             # cv2.waitKey(0)
+
+    def extract_shape(self, contours: list):
+        """
+        :param contours: list for the edges of objects
+        :return: string of the name of the shape
+        """
+
+        if len(contours) < 4:
+            return "Triangle"
+        elif len(contours) == 4:
+            return "Rectangle"
+        elif len(contours) == 5:
+            return "Hexagon"
+        else:
+            return "Circle"
+
+    def extract_radius(self, contour, building):
+        max_distance = 0
+
+        # Compare all pairs of points to find the maximum distance
+        for i in range(len(contour)):
+            for j in range(i + 1, len(contour)):
+                dist = np.linalg.norm(np.array(contour[i]) - np.array(contour[j]))
+                max_distance = max(max_distance, dist)
+
+        building["Radius"] = max_distance / 2  # Radius is half of the diameter
+        return building
 
     def extract_vertex_coordinates(self, contour: list, building: dict):
         """For use withing the extract_building_details, gets the coordinates of the vertices in a group of vertices
@@ -277,6 +311,13 @@ class ImageProcessor:
 
         # Apply the mask to the original image (or the thresholded image)
         filled_image = cv2.bitwise_and(image, mask)  # Or use 'image' instead of 'thresh'
+
+        # Create a kernel for dilation (adjust the size and shape as needed)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # Example 3x3 rectangular kernel
+
+        # Dilate the binary image
+        filled_image = cv2.erode(filled_image, kernel, iterations=2)
+        filled_image = cv2.dilate(filled_image, kernel, iterations=1)
 
         # Invert back to black on white (if needed for Tesseract)
         filled_image = cv2.bitwise_not(filled_image)
