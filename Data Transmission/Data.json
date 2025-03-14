@@ -1,0 +1,51 @@
+{
+    "Buildings": [
+        {
+            "Id": 0,
+            "Shape":"Triangle",
+            "V0":[-3,-5],
+            "V1":[-5,-7],
+            "V2":[-3,0],
+            "Color":"#FF0000",
+            "Height":3
+        },
+        {
+            "Id": 1,
+            "Shape":"Circle",
+            "Center": [-15,12],
+            "Radius":5.0,
+            "Color":"#FFC0CB",
+            "Height":3
+        },
+        {
+            "Id": 2,
+            "Shape":"Rectangle",
+            "V0":[5,2],
+            "V1":[7,2],
+            "V2":[7,10],
+            "V3":[5,10],
+            "Color":"#008000",
+            "Height":15
+        },
+        {
+            "Id": 3,
+            "Shape":"Rectangle",
+            "V0":[-6,8],
+            "V1":[-1,8],
+            "V2":[-1,2],
+            "V3":[-6,2],
+            "Color":"#0000ff",
+            "Height":5
+        },
+        {
+            "Id": 4,
+            "Shape":"Rectangle",
+            "V0":[4,-4],
+            "V1":[2,-4],
+            "V2":[2,-5],
+            "V3":[4,-5],
+            "Color":"#00FFFF",
+            "Height":7
+        }
+    ]
+}
