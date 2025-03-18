@@ -200,7 +200,7 @@ class ImageProcessor:
             print("Couldn't find number.")
             return 1
 
-        return text_number
+        return int(text_number)
 
     def extract_color(self, roi, contour, bounding_box):
         """
