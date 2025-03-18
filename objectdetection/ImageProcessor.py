@@ -135,8 +135,7 @@ class ImageProcessor:
             building (dict): The new building dictionary
             """
         for count, vertex in enumerate(contour):
-            building[f"XofV{count}"] = int(vertex[0][0])
-            building[f"YofV{count}"] = int(vertex[0][1])
+            building[f"V{count}"] = (int(vertex[0][0]), int(vertex[0][1]))
         return building
 
     def extract_roi(self, x, y, w, h):
