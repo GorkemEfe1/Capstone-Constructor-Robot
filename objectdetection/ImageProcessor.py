@@ -198,6 +198,7 @@ class ImageProcessor:
 
         if text_number is None:
             print("Couldn't find number.")
+            return 1
 
         return text_number
 
