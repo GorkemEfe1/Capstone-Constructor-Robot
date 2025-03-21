@@ -290,7 +290,7 @@ class ImageProcessor:
 
         # First, determine max and min areas for thresholding
         max_area = image.shape[0] * image.shape[1] * 0.9
-        min_area = 00
+        min_area = 0
 
         # Second, create a filtered list
         filtered_contours = []
@@ -313,11 +313,13 @@ class ImageProcessor:
         filled_image = cv2.bitwise_and(image, mask)  # Or use 'image' instead of 'thresh'
 
         # Create a kernel for dilation (adjust the size and shape as needed)
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # Example 3x3 rectangular kernel
+        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # Example 3x3 rectangular kernel
 
         # Dilate the binary image
-        filled_image = cv2.erode(filled_image, kernel, iterations=2)
-        filled_image = cv2.dilate(filled_image, kernel, iterations=1)
+        # filled_image = cv2.erode(filled_image, kernel, iterations=2)
+        # filled_image = cv2.dilate(filled_image, kernel, iterations=1)
+
+        filled_image = cv2.medianBlur(filled_image, 7)
 
         # Invert back to black on white (if needed for Tesseract)
         filled_image = cv2.bitwise_not(filled_image)
