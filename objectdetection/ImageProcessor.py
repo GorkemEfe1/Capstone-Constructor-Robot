@@ -2,6 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 from matplotlib import cm
 from pytesseract import image_to_string
+import pytesseract
 import numpy as np
 import json
 
@@ -187,7 +188,7 @@ class ImageProcessor:
         cv2.waitKey(0)
 
         text_number = None
-
+        pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\revas\\AppData\\Local\\Tesseract-OCR\\tesseract.exe'
         for img in versions:
             text = image_to_string(img, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789').strip()
 
