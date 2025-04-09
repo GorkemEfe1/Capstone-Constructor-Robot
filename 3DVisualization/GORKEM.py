@@ -38,7 +38,7 @@ def makeVisualization(filepath):
                 V1 = data['Buildings'][i]['V1']
                 V2 = data['Buildings'][i]['V2']
                 V3 = data['Buildings'][i]['V3']
-                verts = [(V0[0],V0[1],0),(V1[0],V1[1],0),(V3[0],V3[1],0),(V2[0],V2[1],0),(V0[0],V0[1],1),(V1[0],V1[1],1),(V3[0],V3[1],1),(V2[0],V2[1],1)]
+                verts = [(V0[0]/100,V0[1]/100,0),(V1[0]/100,V1[1]/100,0),(V3[0]/100,V3[1]/100,0),(V2[0]/100,V2[1]/100,0),(V0[0]/100,V0[1]/100,1),(V1[0]/100,V1[1]/100,1),(V3[0]/100,V3[1]/100,1),(V2[0]/100,V2[1]/100,1)]
                 faces = [(0,1,3,2),(0,1,5,4),(0,2,6,4),(6,7,3,2),(1,3,7,5),(7,5,4,6)]
                 mesh = bpy.data.meshes.new("Rectangle")
                 object = bpy.data.objects.new("Rectangle", mesh)
@@ -55,7 +55,7 @@ def makeVisualization(filepath):
                 V0 = data['Buildings'][i]['V0']
                 V1 = data['Buildings'][i]['V1']
                 V2 = data['Buildings'][i]['V2']
-                verts = [(V0[0],V0[1],0),(V1[0],V1[1],0),(V2[0],V2[1],0),(V0[0],V0[1],2),(V1[0],V1[1],2),(V2[0],V2[1],2)]
+                verts = [(V0[0]/100,V0[1]/100,0),(V1[0]/100,V1[1]/100,0),(V2[0]/100,V2[1]/100,0),(V0[0]/100,V0[1]/100,2),(V1[0]/100,V1[1]/100,2),(V2[0]/100,V2[1]/100,2)]
                 faces = [(0,1,2),(2,1,4,5),(4,3,0,1),(5,3,0,2),(5,4,3)]
                 mesh = bpy.data.meshes.new("Triangle")
                 object = bpy.data.objects.new("Triangle", mesh)
@@ -71,7 +71,7 @@ def makeVisualization(filepath):
             for j in range(data['Buildings'][i]['Height']):
                 Center = data['Buildings'][i]['Center']
                 r = data['Buildings'][i]['Radius'] 
-                bpy.ops.mesh.primitive_cylinder_add(radius = r, location=(Center[0], Center[1], j+0.5), vertices = 16,depth = 1.0)
+                bpy.ops.mesh.primitive_cylinder_add(radius = r, location=(Center[0]/100, Center[1]/100, j+0.5), vertices = 16,depth = 1.0)
                 cylinder = bpy.context.active_object
                 hex_color = data['Buildings'][i]['Color'] 
                 rgba_color = hex_color_to_rgba(hex_color)
@@ -82,7 +82,7 @@ def makeVisualization(filepath):
 
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
-makeVisualization("F:\AGorkemDepo\Documents\Blender Files\ScriptTest\data.json")
-blendFile = "C:\\Users\\revas\\The Library\\School\\CAPSTONE\\SELF_DOCS\\Visualization.blend"
+makeVisualization("C:\\Users\\revas\\Repos\\Capstone-Constructor-Robot\\Capstone-Constructor-Robot\\result.json")
+blendFile = "Visualization.blend"
 bpy.ops.wm.save_as_mainfile(filepath=blendFile)
 os.startfile(blendFile)
