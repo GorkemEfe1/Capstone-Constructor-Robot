@@ -82,8 +82,7 @@ class ImageProcessor:
                 building = self.extract_vertex_coordinates(contour, building)
             else:
                 building = self.extract_radius(contour, building)
-                building["CenterX"] = x + w/2
-                building["CenterY"] = y + h/2
+                building["Center"] = [x + w/2, y + h/2]
 
             # Extract the region of interest (ROI) from the original image
             roi, roi_grayscale = self.extract_roi(x, y, w, h)
