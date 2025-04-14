@@ -1,7 +1,7 @@
 import subprocess
 
 # Define the command to run the script
-command = ['python', C:\Program Files\Data Transmission_script.py']
+command = ['python','C:\Program Files\Data Transmission_script.py']
 
 # Create a subprocess to run the script
 try:
