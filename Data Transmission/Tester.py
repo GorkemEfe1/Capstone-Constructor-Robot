@@ -7,7 +7,7 @@ arduino_port = 'COM3'  # Change to your Arduino's port
 baud_rate = 9600
 
 # File containing building data
-file_path = 'Data.json'
+file_path = 'C:\\Users\\revas\\Repos\\Capstone-Constructor-Robot\\Capstone-Constructor-Robot\\Data Transmission\\Data.json'
 
 def read_building_data(file_path):
     with open(file_path, 'r') as file:
