@@ -70,7 +70,7 @@ def makeVisualization(filepath):
         elif data['Buildings'][i]['Shape'] == "Circle":
             for j in range(data['Buildings'][i]['Height']):
                 Center = data['Buildings'][i]['Center']
-                r = data['Buildings'][i]['Radius'] 
+                r = data['Buildings'][i]['Radius']/100 
                 bpy.ops.mesh.primitive_cylinder_add(radius = r, location=(Center[0]/100, Center[1]/100, j+0.5), vertices = 16,depth = 1.0)
                 cylinder = bpy.context.active_object
                 hex_color = data['Buildings'][i]['Color'] 
