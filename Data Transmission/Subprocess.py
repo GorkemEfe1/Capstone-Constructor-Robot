@@ -1,12 +1,18 @@
 import subprocess
 
-# Define the command to run the script
-command = ['python',C:\Program Files\Data Transmission_script.py']
+def send_data_to_lcd():
+    try:
+        # Run the script using subprocess
+        result = subprocess.run(['python', 'Tester.py'], check=True, capture_output=True, text=True)
 
-# Create a subprocess to run the script
-try:
-    result = subprocess.run(command, check=True, text=True, capture_output=True)
-    print("Output:", result.stdout)  # Output from the script
-    print("Error (if any):", result.stderr)  # Error message (if any)
-except subprocess.CalledProcessError as e:
-    print(f"Error occurred while running the script: {e}")
+        # Output the results
+        print("Script output:")
+        print(result.stdout)
+
+    except subprocess.CalledProcessError as e:
+        print("There was an error running the script:")
+        print(e.stderr)
+
+if __name__ == "__main__":
+    send_data_to_lcd()
+
