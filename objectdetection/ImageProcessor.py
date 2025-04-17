@@ -280,7 +280,7 @@ class ImageProcessor:
         dilated_img = cv2.dilate(filtered_inv, kernel, iterations=1)
         eroded_img = cv2.erode(dilated_img, kernel, iterations=1)
 
-        return eroded_img
+        return filtered_inv
 
     def fill_number(self, image):
 
@@ -299,6 +299,9 @@ class ImageProcessor:
             if min_area < area < max_area:
                 filtered_contours.append(contour)
 
+        if not filtered_contours:
+            filtered_contours = contours
+
         # Find the largest contour (assuming it's the number)
         largest_contour = max(filtered_contours, key=cv2.contourArea)
         #print(filtered_contours)
@@ -313,13 +316,15 @@ class ImageProcessor:
         filled_image = cv2.bitwise_and(image, mask)  # Or use 'image' instead of 'thresh'
 
         # Create a kernel for dilation (adjust the size and shape as needed)
-        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))  # Example 3x3 rectangular kernel
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))  # Example 3x3 rectangular kernel
 
         # Dilate the binary image
         # filled_image = cv2.erode(filled_image, kernel, iterations=2)
         # filled_image = cv2.dilate(filled_image, kernel, iterations=1)
+        filled_image = cv2.morphologyEx(filled_image, cv2.MORPH_OPEN, kernel)
+        filled_image = cv2.morphologyEx(filled_image, cv2.MORPH_CLOSE, kernel)
 
-        filled_image = cv2.medianBlur(filled_image, 7)
+        filled_image = cv2.bilateralFilter(filled_image, 15, 50, 50)
 
         # Invert back to black on white (if needed for Tesseract)
         filled_image = cv2.bitwise_not(filled_image)
