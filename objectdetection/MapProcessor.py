@@ -54,7 +54,10 @@ class MapProcessor:
 
         ret, self.otsu_threshold = cv2.threshold(self.cv2_image_gray,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
-        self.inpainted_mask = cv2.inpaint(self.threshold_image,self.otsu_threshold, 3, cv2.INPAINT_NS)
+        self.inpainted_mask = cv2.inpaint(self.threshold_image,self.otsu_threshold, 3, cv2.INPAINT_TELEA)
+        self.inpainted_image = cv2.inpaint(self.cv2_image,self.otsu_threshold, 3, cv2.INPAINT_TELEA)
+
+
         self.bilateral_inpainted_mask = cv2.bilateralFilter(self.inpainted_mask, 9, 125, 125)
 
         # kernel_opening = np.ones((2,2),np.uint8)
@@ -151,9 +154,9 @@ class MapProcessor:
     def show_final(self):
         """Creates the environment
         of the picture and shows it"""
-        cv2.drawContours(self.cv2_image, self.filtered_contours, -1, (0, 255, 0), 3)
+        cv2.drawContours(self.inpainted_image, self.filtered_contours, -1, (0, 255, 0), 3)
         plt.subplot(1, 1, 1)
-        plt.imshow(self.cv2_image, cmap=cm.bone)
+        plt.imshow(self.inpainted_image, cmap=cm.bone)
         plt.show()
 
 
